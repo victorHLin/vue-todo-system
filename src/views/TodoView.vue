@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 const router = useRouter()
 
 const api = 'https://todolist-api.hexschool.io'
@@ -91,9 +91,18 @@ const addTodo = async () => {
         }
       }
     )
-    getTodos()
+    // getTodos()
 
     newTodo.value = ''
+    router.push('/todo/all')
+    var navItems = document.querySelectorAll('.nav-item')
+    for (var i = 0; i < navItems.length; i++) {
+      if (navItems[i].id === 'all') {
+        navItems[i].classList.add('active')
+      } else {
+        navItems[i].classList.remove('active')
+      }
+    }
   } catch (err) {
     console.log(err.response.data.message)
   }
@@ -133,38 +142,19 @@ const cancel = () => {
   isEditing.value = -1
 }
 */
-// delete
-const deleteTodo = async (id) => {
-  try {
-    await axios.delete(`${api}/todos/${id}`, {
-      headers: {
-        Authorization: token.value
-      }
-    })
 
-    getTodos()
-  } catch (err) {
-    console.log(err.response.data.message)
+const changeActive = (e) => {
+  console.log(e.target.id)
+  var navItems = document.querySelectorAll('.nav-item')
+  for (var i = 0; i < navItems.length; i++) {
+    if (navItems[i].id === e.target.id) {
+      navItems[i].classList.add('active')
+    } else {
+      navItems[i].classList.remove('active')
+    }
   }
-}
-
-// patch toggle
-const toggleStatus = async (id) => {
-  try {
-    await axios.patch(
-      `${api}/todos/${id}/toggle`,
-      {},
-      {
-        headers: {
-          Authorization: token.value
-        }
-      }
-    )
-
-    getTodos()
-  } catch (err) {
-    console.log(err.response.data.message)
-  }
+  //document.querySelector(`#${e.target.id}`).classList.add('active')
+  router.push(`/todo/${e.target.id}`)
 }
 
 //const active=ref('all')
@@ -176,7 +166,9 @@ const toggleStatus = async (id) => {
       <h1><a href="#">ONLINE TODO LIST</a></h1>
       <ul>
         <li class="todo_sm">
-          <a href="#"><span>{{user.nickname}} Todo List</span></a>
+          <a href="#"
+            ><span>{{ user.nickname }}'s Todo List</span></a
+          >
         </li>
         <li><a href="#" @click="signout">Logout</a></li>
       </ul>
@@ -185,36 +177,22 @@ const toggleStatus = async (id) => {
       <div class="todoList_Content">
         <div class="inputBox">
           <input type="text" placeholder="Enter Task" v-model="newTodo" />
-          <a href="#" @click="addTodo()">
+          <a href="#" @click.prevent="addTodo()">
             <i class="fa fa-plus"></i>
           </a>
         </div>
         <div class="todoList_list">
           <ul class="todoList_tab">
-            <li><a href="#" class="active">All</a></li>
-            <li><a href="#">Working</a></li>
-            <li><a href="#">Done</a></li>
+            <li>
+              <a href="#" id="all" class="nav-item active" @click.prevent="changeActive">All</a>
+            </li>
+            <li>
+              <a href="#" id="working" class="nav-item" @click.prevent="changeActive">Working</a>
+            </li>
+            <li><a href="#" id="done" class="nav-item" @click.prevent="changeActive">Done</a></li>
           </ul>
           <div class="todoList_items">
-            <ul class="todoList_item">
-              <li v-for="todo in todos" :key="todo.id">
-                <label class="todoList_label">
-                  <input
-                    class="todoList_input"
-                    type="checkbox"
-                    value="todo.status"
-                    @click="toggleStatus(todo.id)"
-                  />
-                  <span>{{ todo.content }}</span>
-                </label>
-                <a href="#" @click="deleteTodo(item.id)">
-                  <i class="fa fa-times"></i>
-                </a>
-              </li>
-            </ul>
-            <div class="todoList_statistics">
-              <p> X todo Done</p>
-            </div>
+            <RouterView />
           </div>
         </div>
       </div>

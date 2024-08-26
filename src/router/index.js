@@ -21,7 +21,32 @@ const router = createRouter({
     {
       path: '/todo',
       name: 'todo',
-      component: () => import('../views/TodoView.vue')
+      component: () => import('../views/TodoView.vue'),
+      children:[
+        {
+          path: '',
+          name: 'default',
+          component: () => import('../views/TodoAllView.vue')
+        },
+        {
+          path: 'all',
+          name: 'all',
+          component: () => import('../views/TodoAllView.vue')
+        },{
+          path: 'done',
+          name: 'done',
+          component: () => import('../views/TodoDoneView.vue')
+        },
+        {
+          path: 'working',
+          name: 'working',
+          component: () => import('../views/TodoWorkingView.vue')
+        }
+      ]
+    },{
+      path:'/:pathMatch(.*)*',
+      name:'notFound',
+      component: ()=> import('../views/NotFoundView.vue')
     }
   ]
 })

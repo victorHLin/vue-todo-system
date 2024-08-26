@@ -24,7 +24,7 @@ const signIn = async () => {
     document.cookie = `customName=${res.data.token};`
     token.value = res.data.token
     signInErrMsg.value = ''
-    router.push({ name: 'todo' })
+    router.push('/todo')
   } catch (err) {
     console.log(err)
     signInErrMsg.value = err.response.data.message
@@ -76,7 +76,7 @@ const signIn = async () => {
             v-model="signInField.password"
           />
           <input class="formControls_btnSubmit" type="button" @click="signIn()" value="Login" />
-          <a class="formControls_btnLink" href="#" @click.prevent="router.push('register')"
+          <a class="formControls_btnLink" href="#" @click.prevent="router.push('/register')"
             >Register</a
           >
         </form>

@@ -26,7 +26,7 @@ const signup = async () => {
     const res = await axios.post(`${api}/users/sign_up`, signupField.value)
     signupRes.value = res.data.uid
     signupErrMsg.value = ''
-    router.push('login')
+    router.push('/login')
   } catch (err) {
     signupErrMsg.value = err.response.data.message
   }
