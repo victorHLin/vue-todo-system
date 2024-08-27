@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-import { RouterView, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const api = 'https://todolist-api.hexschool.io'
@@ -20,7 +20,8 @@ onMounted(async () => {
   if (cookie) {
     validation()
   } else {
-    this.$router.push('login')
+    alert("You haven't login")
+    router.push('/login')
   }
 })
 
@@ -91,23 +92,27 @@ const addTodo = async () => {
         }
       }
     )
-    // getTodos()
-
+    getTodos()
     newTodo.value = ''
-    router.push('/todo/all')
-    var navItems = document.querySelectorAll('.nav-item')
-    for (var i = 0; i < navItems.length; i++) {
-      if (navItems[i].id === 'all') {
-        navItems[i].classList.add('active')
-      } else {
-        navItems[i].classList.remove('active')
-      }
-    }
   } catch (err) {
     console.log(err.response.data.message)
   }
 }
 
+// delete
+const deleteTodo = async (id) => {
+  try {
+    await axios.delete(`${api}/todos/${id}`, {
+      headers: {
+        Authorization: token.value
+      }
+    })
+
+    getTodos()
+  } catch (err) {
+    console.log(err.response.data.message)
+  }
+}
 // update
 /*
 const isEditing = ref(-1)
@@ -143,21 +148,45 @@ const cancel = () => {
 }
 */
 
-const changeActive = (e) => {
-  console.log(e.target.id)
-  var navItems = document.querySelectorAll('.nav-item')
-  for (var i = 0; i < navItems.length; i++) {
-    if (navItems[i].id === e.target.id) {
-      navItems[i].classList.add('active')
-    } else {
-      navItems[i].classList.remove('active')
-    }
+const todoFilteredByActive = computed(() => {
+  if (active.value === 'all') {
+    return todos.value
+  } else if (active.value === 'working') {
+    return todos.value.filter((todo) => !todo.status)
+  } else {
+    return todos.value.filter((todo) => todo.status)
   }
-  //document.querySelector(`#${e.target.id}`).classList.add('active')
-  router.push(`/todo/${e.target.id}`)
+})
+const active = ref('all')
+const toggleStatus = async (id) => {
+  try {
+    await axios.patch(
+      `${api}/todos/${id}/toggle`,
+      {},
+      {
+        headers: {
+          Authorization: token.value
+        }
+      }
+    )
+
+    getTodos()
+  } catch (err) {
+    console.log(err.response.data.message)
+  }
 }
 
-//const active=ref('all')
+const WorkingCount = computed(() => {
+  return todos.value.reduce((pre, next) => {
+    return pre + !next.status
+  }, 0)
+})
+
+const DoneCount = computed(() => {
+  return todos.value.reduce((pre, next) => {
+    return pre + next.status
+  }, 0)
+})
 </script>
 
 <template>
@@ -184,15 +213,53 @@ const changeActive = (e) => {
         <div class="todoList_list">
           <ul class="todoList_tab">
             <li>
-              <a href="#" id="all" class="nav-item active" @click.prevent="changeActive">All</a>
+              <a
+                href="#"
+                id="all"
+                :class="{ active: active === 'all' }"
+                @click.prevent="active = 'all'"
+                >All</a
+              >
             </li>
             <li>
-              <a href="#" id="working" class="nav-item" @click.prevent="changeActive">Working</a>
+              <a
+                href="#"
+                id="working"
+                :class="{ active: active === 'working' }"
+                @click.prevent="active = 'working'"
+                >Working</a
+              >
             </li>
-            <li><a href="#" id="done" class="nav-item" @click.prevent="changeActive">Done</a></li>
+            <li>
+              <a
+                href="#"
+                id="done"
+                :class="{ active: active === 'done' }"
+                @click.prevent="active = 'done'"
+                >Done</a
+              >
+            </li>
           </ul>
           <div class="todoList_items">
-            <RouterView />
+            <ul class="todoList_item">
+              <li v-for="todo in todoFilteredByActive" :key="todo.id">
+                <label class="todoList_label">
+                  <input
+                    class="todoList_input"
+                    type="checkbox"
+                    v-model="todo.status"
+                    @click="toggleStatus(todo.id)"
+                  />
+                  <span>{{ todo.content }}</span>
+                </label>
+                <a href="#" @click.prevent="deleteTodo(todo.id)">
+                  <i class="fa fa-minus"></i>
+                </a>
+              </li>
+            </ul>
+            <div class="todoList_statistics">
+              <p>{{ WorkingCount }} still working, {{ DoneCount }} todo Done</p>
+            </div>
           </div>
         </div>
       </div>

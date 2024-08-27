@@ -11,7 +11,7 @@
         <span>{{ todo.content }}</span>
       </label>
       <a href="#" @click.prevent="deleteTodo(todo.id)">
-        <i class="fa fa-times">-</i>
+        <i class="fa fa-times"></i>
       </a>
     </li>
   </ul>
@@ -86,5 +86,4 @@ const DoneCount = computed(() => {
     return pre + next.status
   }, 0)
 })
-
 </script>
