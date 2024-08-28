@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import showAlert from '@/utils/showAlert'
 const router = useRouter()
 
 const api = 'https://todolist-api.hexschool.io'
@@ -13,26 +14,32 @@ const user = ref({
 
 //validation
 onMounted(async () => {
-  const cookie = document.cookie.replace(/(?:(?:^|.*;\s*)customName\s*=\s*([^;]*).*$)|^.*$/, '$1')
-  // token.value = cookie
-  axios.defaults.headers.common['Authorization'] = cookie
-  if (cookie) {
-    validation()
-  } else {
-    alert("You haven't login")
-    router.push('/login')
-  }
+  validation()
+  setInterval(validation, 5 * 60 * 1000)
 })
 
 const validation = async () => {
   try {
+    const cookie = document.cookie.replace(/(?:(?:^|.*;\s*)customName\s*=\s*([^;]*).*$)|^.*$/, '$1')
+    if (!cookie) {
+      showAlert(
+        "You haven't login or your token is expired!",
+        'Redirect to login page',
+        'warning',
+        'OK'
+      )
+      router.push('/login')
+    }
+
+    axios.defaults.headers.common['Authorization'] = cookie
     const res = await axios.get(`${api}/users/checkout`)
     user.value = res.data
     getTodos()
   } catch (err) {
-    // validation failed should logout the user
     console.log(err.response.data.message)
-    signout()
+    cleanUp()
+    showAlert('Your token is expired!', 'You will be sign out directly!', 'warning', 'OK')
+    router.push('/login')
   }
 }
 
@@ -40,14 +47,18 @@ const validation = async () => {
 const signout = async () => {
   try {
     await axios.post(`${api}/users/sign_out`, {})
-    axios.defaults.headers.common['Authorization'] = ''
-    document.cookie = `customName=;`
-    user.value = {}
-    alert('Logout success!')
+    cleanUp()
+    showAlert('Logout Success', 'Redirect to login page', 'success', 'OK')
     router.push('/login')
   } catch (err) {
     console.log(err.response.data.message)
   }
+}
+
+const cleanUp = () => {
+  axios.defaults.headers.common['Authorization'] = ''
+  document.cookie = `customName=;`
+  user.value = {}
 }
 
 const todos = ref([])
@@ -66,6 +77,10 @@ const getTodos = async () => {
 const newTodo = ref('')
 
 const addTodo = async () => {
+  if (newTodo.value.trim().length === 0) {
+    showAlert('New task cannot be empty!', 'Please enter a valid task!', 'warning', 'OK')
+    return
+  }
   try {
     await axios.post(`${api}/todos`, { content: newTodo.value })
     getTodos()
@@ -85,6 +100,7 @@ const deleteTodo = async (id) => {
     console.log(err.response.data.message)
   }
 }
+// TODO
 // update
 /*
 const isEditing = ref(-1)
@@ -129,6 +145,7 @@ const todoFilteredByActive = computed(() => {
     return todos.value.filter((todo) => todo.status)
   }
 })
+
 const active = ref('all')
 const toggleStatus = async (id) => {
   try {
@@ -222,7 +239,7 @@ const DoneCount = computed(() => {
               </li>
             </ul>
             <div class="todoList_statistics">
-              <p>{{ WorkingCount }} still working, {{ DoneCount }} Done</p>
+              <p>{{ WorkingCount }} still working, {{ DoneCount }} complete</p>
             </div>
           </div>
         </div>

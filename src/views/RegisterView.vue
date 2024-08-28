@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import showAlert from '@/utils/showAlert'
 const router = useRouter()
 
 // sign up
@@ -27,7 +28,7 @@ const signup = async () => {
     signupRes.value = res.data.uid
     signupErrMsg.value = ''
     setTimeout(() => {
-      alert('Register success! Please login')
+      showAlert('Register Success', 'Redirect to login page', 'success', 'OK')
       router.push('/login')
     }, 500)
   } catch (err) {
@@ -61,7 +62,7 @@ const signup = async () => {
             type="text"
             id="email"
             name="email"
-            placeholder="Please insert email"
+            placeholder="Please enter your email"
             required
             v-model="signupField.email"
           />
@@ -71,7 +72,7 @@ const signup = async () => {
             type="text"
             name="name"
             id="name"
-            placeholder="Please insert your name"
+            placeholder="Please enter your name"
             v-model="signupField.nickname"
           />
           <label class="formControls_label" for="pwd">Password</label>
@@ -80,7 +81,7 @@ const signup = async () => {
             type="password"
             name="pwd"
             id="pwd"
-            placeholder="Please insert password"
+            placeholder="Please enter your password"
             required
             v-model="signupField.password"
           />
@@ -90,7 +91,7 @@ const signup = async () => {
             type="password"
             name="pwdConfirm"
             id="pwdConfirm"
-            placeholder="Please insert password again"
+            placeholder="Please enter your password again"
             required
             v-model="signupField.passwordConfirm"
           />
