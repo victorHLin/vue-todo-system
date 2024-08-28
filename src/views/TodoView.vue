@@ -239,7 +239,8 @@ const DoneCount = computed(() => {
               </li>
             </ul>
             <div class="todoList_statistics">
-              <p>{{ WorkingCount }} still working, {{ DoneCount }} complete</p>
+              <p v-if="WorkingCount + DoneCount == 0">No tasks added</p>
+              <p v-else>{{ WorkingCount }} pending, {{ DoneCount }} complete</p>
             </div>
           </div>
         </div>
