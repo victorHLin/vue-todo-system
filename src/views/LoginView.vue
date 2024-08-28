@@ -26,7 +26,7 @@ const signIn = async () => {
     signInErrMsg.value = ''
     router.push('/todo')
   } catch (err) {
-    console.log(err)
+    // console.log(err)
     signInErrMsg.value = err.response.data.message
     console.log(err.response.data.message)
     signInField.value.email = ''
@@ -64,7 +64,6 @@ const signIn = async () => {
             required
             v-model="signInField.email"
           />
-          <span v-if="signInErrMsg">{{ signInErrMsg }}</span>
           <label class="formControls_label" for="pwd">Password</label>
           <input
             class="formControls_input"
@@ -75,6 +74,7 @@ const signIn = async () => {
             required
             v-model="signInField.password"
           />
+          <span v-if="signInErrMsg">{{ signInErrMsg }}</span>
           <input class="formControls_btnSubmit" type="button" @click="signIn()" value="Login" />
           <a class="formControls_btnLink" href="#" @click.prevent="router.push('/register')"
             >Register</a

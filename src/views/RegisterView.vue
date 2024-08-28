@@ -26,8 +26,10 @@ const signup = async () => {
     const res = await axios.post(`${api}/users/sign_up`, signupField.value)
     signupRes.value = res.data.uid
     signupErrMsg.value = ''
-    alert('Register success! Please login')
-    router.push('/login')
+    setTimeout(() => {
+      alert('Register success! Please login')
+      router.push('/login')
+    }, 500)
   } catch (err) {
     signupErrMsg.value = err.response.data.message
   }
@@ -82,12 +84,12 @@ const signup = async () => {
             required
             v-model="signupField.password"
           />
-          <label class="formControls_label" for="pwd">Confirm Password</label>
+          <label class="formControls_label" for="pwdConfirm">Confirm Password</label>
           <input
             class="formControls_input"
             type="password"
-            name="pwd"
-            id="pwd"
+            name="pwdConfirm"
+            id="pwdConfirm"
             placeholder="Please insert password again"
             required
             v-model="signupField.passwordConfirm"

@@ -1,3 +1,4 @@
+import '../node_modules/bootstrap/scss/bootstrap.scss'
 import './assets/all.scss'
 import 'font-awesome/css/font-awesome.min.css'
 

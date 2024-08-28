@@ -11,12 +11,11 @@ const user = ref({
   uid: ''
 })
 
-const token = ref('')
-
 //validation
 onMounted(async () => {
   const cookie = document.cookie.replace(/(?:(?:^|.*;\s*)customName\s*=\s*([^;]*).*$)|^.*$/, '$1')
-  token.value = cookie
+  // token.value = cookie
+  axios.defaults.headers.common['Authorization'] = cookie
   if (cookie) {
     validation()
   } else {
@@ -27,11 +26,7 @@ onMounted(async () => {
 
 const validation = async () => {
   try {
-    const res = await axios.get(`${api}/users/checkout`, {
-      headers: {
-        Authorization: token.value
-      }
-    })
+    const res = await axios.get(`${api}/users/checkout`)
     user.value = res.data
     getTodos()
   } catch (err) {
@@ -44,19 +39,12 @@ const validation = async () => {
 // signout
 const signout = async () => {
   try {
-    await axios.post(
-      `${api}/users/sign_out`,
-      {},
-      {
-        headers: {
-          Authorization: token.value
-        }
-      }
-    )
-    token.value = ''
+    await axios.post(`${api}/users/sign_out`, {})
+    axios.defaults.headers.common['Authorization'] = ''
     document.cookie = `customName=;`
     user.value = {}
-    router.push('login')
+    alert('Logout success!')
+    router.push('/login')
   } catch (err) {
     console.log(err.response.data.message)
   }
@@ -67,11 +55,7 @@ const todos = ref([])
 // get todos
 const getTodos = async () => {
   try {
-    const response = await axios.get(`${api}/todos`, {
-      headers: {
-        Authorization: token.value
-      }
-    })
+    const response = await axios.get(`${api}/todos`)
     todos.value = response.data.data
   } catch (err) {
     console.log(err.response.data.message)
@@ -83,15 +67,7 @@ const newTodo = ref('')
 
 const addTodo = async () => {
   try {
-    await axios.post(
-      `${api}/todos`,
-      { content: newTodo.value },
-      {
-        headers: {
-          Authorization: token.value
-        }
-      }
-    )
+    await axios.post(`${api}/todos`, { content: newTodo.value })
     getTodos()
     newTodo.value = ''
   } catch (err) {
@@ -102,11 +78,7 @@ const addTodo = async () => {
 // delete
 const deleteTodo = async (id) => {
   try {
-    await axios.delete(`${api}/todos/${id}`, {
-      headers: {
-        Authorization: token.value
-      }
-    })
+    await axios.delete(`${api}/todos/${id}`)
 
     getTodos()
   } catch (err) {
@@ -160,15 +132,7 @@ const todoFilteredByActive = computed(() => {
 const active = ref('all')
 const toggleStatus = async (id) => {
   try {
-    await axios.patch(
-      `${api}/todos/${id}/toggle`,
-      {},
-      {
-        headers: {
-          Authorization: token.value
-        }
-      }
-    )
+    await axios.patch(`${api}/todos/${id}/toggle`, {})
 
     getTodos()
   } catch (err) {
@@ -195,7 +159,7 @@ const DoneCount = computed(() => {
       <h1><a href="#">ONLINE TODO LIST</a></h1>
       <ul>
         <li class="todo_sm">
-          <a href="#"
+          <a href="#" id="nickName" @click.prevent="active = 'all'"
             ><span>{{ user.nickname }}'s Todo List</span></a
           >
         </li>
@@ -253,12 +217,12 @@ const DoneCount = computed(() => {
                   <span>{{ todo.content }}</span>
                 </label>
                 <a href="#" @click.prevent="deleteTodo(todo.id)">
-                  <i class="fa fa-minus"></i>
+                  <i class="fa fa-times"></i>
                 </a>
               </li>
             </ul>
             <div class="todoList_statistics">
-              <p>{{ WorkingCount }} still working, {{ DoneCount }} todo Done</p>
+              <p>{{ WorkingCount }} still working, {{ DoneCount }} Done</p>
             </div>
           </div>
         </div>
